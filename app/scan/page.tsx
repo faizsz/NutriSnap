@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
 import { compressImage } from '@/lib/image-utils'
 import { FoodItem, AnalyzeResponse } from '@/types/database'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import BottomNav from '@/components/BottomNav'
 
 export default function ScanPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -22,16 +22,19 @@ export default function ScanPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [editedItems, setEditedItems] = useState<FoodItem[]>([])
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   // Redirect if not logged in
-  if (!user) {
-    router.push('/login')
-    return null
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [user, authLoading, router])
 
   const handleFileSelect = async (file: File) => {
     try {
       setError(null)
+      setSaveSuccess(false)
       
       // Compress image
       const compressed = await compressImage(file, 2)
@@ -45,7 +48,7 @@ export default function ScanPage() {
       setAnalysisResult(null)
       setEditedItems([])
     } catch (err: any) {
-      setError(err.message || 'Failed to process image')
+      setError(err.message || 'Gagal memproses gambar')
     }
   }
 
@@ -76,13 +79,13 @@ export default function ScanPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Analysis failed')
+        throw new Error(data.error || 'Analisis gagal')
       }
 
       setAnalysisResult(data)
-      setEditedItems(data.items)
+      setEditedItems(data.items || [])
     } catch (err: any) {
-      setError(err.message || 'Failed to analyze image')
+      setError(err.message || 'Gagal menganalisis gambar')
     } finally {
       setAnalyzing(false)
     }
@@ -92,6 +95,21 @@ export default function ScanPage() {
     const updated = [...editedItems]
     updated[index] = { ...updated[index], [field]: value }
     setEditedItems(updated)
+  }
+
+  const handleAddItem = () => {
+    setEditedItems([
+      ...editedItems,
+      {
+        name: 'Item Makanan Baru',
+        confidence: 'high',
+        portion_estimate_g: 100,
+        calories: 100,
+        protein_g: 5,
+        carbs_g: 15,
+        fat_g: 2
+      }
+    ])
   }
 
   const calculateTotals = () => {
@@ -127,325 +145,356 @@ export default function ScanPage() {
 
       if (insertError) throw insertError
 
-      // Redirect to dashboard
+      setSaveSuccess(true)
+      // Wait briefly before redirecting
+      await new Promise(resolve => setTimeout(resolve, 1500))
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.message || 'Failed to save food log')
+      setError(err.message || 'Gagal menyimpan riwayat makanan')
     } finally {
       setSaving(false)
     }
   }
 
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin text-4xl text-primary">🔄</div>
+      </div>
+    )
+  }
+
+  const totals = calculateTotals()
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl font-bold">🍎</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Scan Makanan</h1>
+    <div className="min-h-screen bg-background text-on-background pb-32 transition-colors duration-300 font-sans">
+      
+      {/* Top App Bar */}
+      <header className="bg-background fixed top-0 w-full z-50 border-b border-surface-variant/10 shadow-sm">
+        <div className="flex justify-between items-center w-full px-margin-mobile py-xs max-w-container-max mx-auto h-16">
+          <div className="flex items-center gap-3">
+            {analysisResult && (
+              <button 
+                onClick={() => {
+                  setAnalysisResult(null)
+                  setEditedItems([])
+                }} 
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+              >
+                <span className="material-symbols-outlined text-primary">arrow_back</span>
+              </button>
+            )}
+            <span className="material-symbols-outlined text-primary text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>nutrition</span>
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">NutriSnap</h1>
           </div>
-          <Link href="/dashboard">
-            <Button variant="outline">Kembali</Button>
+          <Link href="/profile" className="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-outline-variant flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary">person</span>
           </Link>
         </div>
+      </header>
 
+      <main className="max-w-container-max mx-auto pt-20 px-margin-mobile">
+        
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="mb-md p-sm bg-error-container text-on-error-container rounded-2xl text-center max-w-lg mx-auto">
+            <p className="text-caption">{error}</p>
           </div>
         )}
 
-        {!analysisResult ? (
-          <>
-            {/* Upload Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
+        {/* DEFAULT UPLOAD STATE */}
+        {!analysisResult && (
+          <section className="max-w-lg mx-auto flex flex-col items-center space-y-md">
+            
+            {/* Instructional Header */}
+            <div className="text-center w-full">
+              <h2 className="font-title-md text-title-md mb-xs text-on-surface">Ambil Foto Makanan Anda</h2>
+              <p className="font-body-md text-body-md text-on-surface-variant">AI kami akan menghitung kalori dan nutrisi secara otomatis.</p>
+            </div>
+
+            {/* Upload Container */}
+            <div 
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onClick={() => !analyzing && fileInputRef.current?.click()}
+              className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden bg-surface-container-low dark:bg-surface-container-high group cursor-pointer transition-all duration-300 hover:shadow-xl border-2 border-dashed border-outline-variant hover:border-primary flex items-center justify-center"
+            >
               {!previewUrl ? (
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-green-500 transition cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <div className="text-6xl mb-4">📸</div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                    Upload Foto Makanan
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Drag & drop foto atau klik untuk pilih file
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        fileInputRef.current?.click()
-                      }}
-                    >
-                      Pilih File
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        cameraInputRef.current?.click()
-                      }}
-                    >
-                      📷 Buka Kamera
-                    </Button>
+                // Default placeholder
+                <div className="flex flex-col items-center justify-center p-md text-center">
+                  <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mb-md transition-transform group-hover:scale-110 text-white">
+                    <span className="material-symbols-outlined text-[40px]">center_focus_strong</span>
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileSelect(file)
-                    }}
-                  />
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileSelect(file)
-                    }}
-                  />
+                  <p className="font-title-md text-title-md text-primary font-semibold">Ketuk untuk Memotret</p>
+                  <p className="font-label-sm text-label-sm text-on-surface-variant mt-xs">atau seret foto ke sini</p>
                 </div>
               ) : (
-                <div>
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full h-96 object-contain rounded-lg mb-4"
-                  />
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={handleAnalyze}
-                      disabled={analyzing}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      {analyzing ? 'Menganalisis...' : '🔍 Analisis Makanan'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPreviewUrl(null)
-                        setSelectedFile(null)
-                      }}
-                    >
-                      Ganti Foto
-                    </Button>
-                  </div>
+                // Selected image preview
+                <div className="absolute inset-0 w-full h-full">
+                  <img className="w-full h-full object-cover" alt="Preview Makanan" src={previewUrl} />
+                  {analyzing && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-md z-20">
+                      {/* Scanning Line Animation */}
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#62fae3] to-transparent shadow-[0_0_15px_#62fae3] animate-[scan_3s_linear_infinite]" />
+                      <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 rounded-full border-4 border-white/20 border-t-white animate-spin"></div>
+                      </div>
+                      <p className="font-title-md text-title-md font-medium">Menganalisis foto...</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {analyzing && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-                <div className="animate-spin text-6xl mb-4">🔄</div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                  Sedang Menganalisis...
-                </h3>
-                <p className="text-gray-600">
-                  AI sedang mengenali makanan dan menghitung nutrisinya
-                </p>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Results Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
-              <h2 className="text-2xl font-bold mb-6 text-gray-900">
-                Hasil Analisis
-              </h2>
+            <input 
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileSelect(file)
+              }}
+            />
+            <input 
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileSelect(file)
+              }}
+            />
 
-              <div className="space-y-4">
-                {editedItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-900">
-                          {item.name}
-                        </h3>
-                        <span
-                          className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                            item.confidence === 'high'
-                              ? 'bg-green-100 text-green-700'
-                              : item.confidence === 'medium'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {item.confidence === 'high'
-                            ? '✓ Akurat'
-                            : item.confidence === 'medium'
-                            ? '⚠ Cukup Yakin'
-                            : '⚠ Perlu Dicek'}
+            {/* Action Buttons */}
+            <div className="w-full space-y-sm">
+              {previewUrl && !analyzing ? (
+                <button 
+                  onClick={handleAnalyze}
+                  className="w-full h-14 bg-primary text-on-primary rounded-full font-title-md text-title-md shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">auto_awesome</span>
+                  Analisis dengan AI
+                </button>
+              ) : (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-14 bg-primary text-on-primary rounded-full font-title-md text-title-md shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">photo_camera</span>
+                  Pilih Gambar Makanan
+                </button>
+              )}
+              
+              <div className="flex gap-sm">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 h-12 bg-surface-container border border-outline-variant text-on-surface-variant rounded-full font-label-sm text-label-sm flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">image</span>
+                  Galeri
+                </button>
+                <button 
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 h-12 bg-surface-container border border-outline-variant text-on-surface-variant rounded-full font-label-sm text-label-sm flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">photo_camera</span>
+                  Kamera
+                </button>
+              </div>
+            </div>
+
+            {/* Tip Card */}
+            <div className="w-full bg-secondary-container/20 p-md rounded-2xl flex gap-md items-start border border-secondary-container/10">
+              <span className="material-symbols-outlined text-primary text-[24px]">lightbulb</span>
+              <div className="text-left">
+                <p className="font-label-sm font-bold text-primary mb-1">Tips untuk Hasil Terbaik</p>
+                <p className="font-body-md text-caption text-on-surface-variant">Pastikan pencahayaan cukup dan foto diambil tegak lurus dari atas piring Anda.</p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* RESULTS BREAKDOWN STATE */}
+        {analysisResult && (
+          <section className="space-y-lg animate-in fade-in duration-300">
+            
+            {/* Title */}
+            <div>
+              <h2 className="font-headline-lg text-headline-lg text-on-background">Hasil Analisis</h2>
+              <p className="font-body-md text-body-md text-on-surface-variant">Verifikasi item yang terdeteksi dan sesuaikan nilai makronutrisi jika perlu.</p>
+            </div>
+
+            {/* Bento Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+              {editedItems.map((item, idx) => (
+                <article 
+                  key={idx} 
+                  className="bg-surface-container-lowest dark:bg-inverse-surface rounded-2xl p-md shadow-[0px_4px_20px_rgba(0,0,0,0.03)] border border-transparent hover:border-primary-container transition-all group"
+                >
+                  <div className="flex gap-md">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container border border-outline-variant/10">
+                      {previewUrl ? (
+                        <img className="w-full h-full object-cover" alt={item.name} src={previewUrl} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl bg-primary/10 text-primary">
+                          🍽️
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-grow min-w-0 text-left">
+                      <div className="flex justify-between items-start gap-1">
+                        <input 
+                          type="text" 
+                          value={item.name} 
+                          onChange={(e) => handleItemEdit(idx, 'name', e.target.value)}
+                          className="font-title-md text-title-md text-on-surface font-semibold bg-transparent border-none p-0 focus:ring-0 w-full hover:bg-surface-container-low transition rounded px-1"
+                        />
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                          item.confidence === 'high' 
+                            ? 'bg-primary/10 text-primary' 
+                            : item.confidence === 'medium' 
+                            ? 'bg-secondary-container text-on-secondary-container' 
+                            : 'bg-error-container text-on-error-container'
+                        }`}>
+                          {item.confidence === 'high' ? 'Akurat' : item.confidence === 'medium' ? 'Sedang' : 'Rendah'}
                         </span>
                       </div>
-                    </div>
+                      
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <label className="font-caption text-caption text-on-surface-variant">Porsi (g):</label>
+                        <input 
+                          type="number" 
+                          value={item.portion_estimate_g} 
+                          onChange={(e) => handleItemEdit(idx, 'portion_estimate_g', parseFloat(e.target.value) || 0)}
+                          className="w-16 bg-surface-container-low border-none rounded-lg p-1 text-on-surface font-semibold text-center text-xs focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <div>
-                        <label className="text-xs text-gray-600">
-                          Porsi (g)
-                        </label>
-                        <input
-                          type="number"
-                          value={item.portion_estimate_g}
-                          onChange={(e) =>
-                            handleItemEdit(
-                              index,
-                              'portion_estimate_g',
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-2 py-1 border rounded text-sm"
+                      <div className="flex items-center gap-1.5 mt-1.5 text-primary">
+                        <span className="material-symbols-outlined text-[16px]">fitness_center</span>
+                        <input 
+                          type="number" 
+                          value={item.calories} 
+                          onChange={(e) => handleItemEdit(idx, 'calories', parseFloat(e.target.value) || 0)}
+                          className="w-16 bg-surface-container-low border-none rounded-lg p-1 text-primary font-bold text-center text-xs focus:ring-1 focus:ring-primary"
                         />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-600">
-                          Kalori
-                        </label>
-                        <input
-                          type="number"
-                          value={item.calories}
-                          onChange={(e) =>
-                            handleItemEdit(
-                              index,
-                              'calories',
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-2 py-1 border rounded text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-600">
-                          Protein (g)
-                        </label>
-                        <input
-                          type="number"
-                          value={item.protein_g}
-                          onChange={(e) =>
-                            handleItemEdit(
-                              index,
-                              'protein_g',
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-2 py-1 border rounded text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-600">
-                          Karbo (g)
-                        </label>
-                        <input
-                          type="number"
-                          value={item.carbs_g}
-                          onChange={(e) =>
-                            handleItemEdit(
-                              index,
-                              'carbs_g',
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-2 py-1 border rounded text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-600">
-                          Lemak (g)
-                        </label>
-                        <input
-                          type="number"
-                          value={item.fat_g}
-                          onChange={(e) =>
-                            handleItemEdit(
-                              index,
-                              'fat_g',
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-2 py-1 border rounded text-sm"
-                        />
+                        <span className="text-[10px] text-on-surface-variant font-medium">kkal</span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Totals */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="font-semibold mb-4 text-gray-900">
-                  Total Nutrisi
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600">Kalori</div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {calculateTotals().calories}
+                  {/* Macros Inputs */}
+                  <div className="mt-md pt-md border-t border-outline-variant/30 grid grid-cols-3 gap-xs">
+                    <div className="flex flex-col text-center">
+                      <label className="font-caption text-[11px] text-on-surface-variant mb-1">Protein (g)</label>
+                      <input 
+                        className="bg-surface-container-low dark:bg-surface-dim border-none rounded-lg p-2 text-on-surface font-bold focus:ring-2 focus:ring-primary text-center text-sm" 
+                        type="number" 
+                        value={item.protein_g}
+                        onChange={(e) => handleItemEdit(idx, 'protein_g', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="flex flex-col text-center">
+                      <label className="font-caption text-[11px] text-on-surface-variant mb-1">Karbo (g)</label>
+                      <input 
+                        className="bg-surface-container-low dark:bg-surface-dim border-none rounded-lg p-2 text-on-surface font-bold focus:ring-2 focus:ring-primary text-center text-sm" 
+                        type="number" 
+                        value={item.carbs_g}
+                        onChange={(e) => handleItemEdit(idx, 'carbs_g', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="flex flex-col text-center">
+                      <label className="font-caption text-[11px] text-on-surface-variant mb-1">Lemak (g)</label>
+                      <input 
+                        className="bg-surface-container-low dark:bg-surface-dim border-none rounded-lg p-2 text-on-surface font-bold focus:ring-2 focus:ring-primary text-center text-sm" 
+                        type="number" 
+                        value={item.fat_g}
+                        onChange={(e) => handleItemEdit(idx, 'fat_g', parseFloat(e.target.value) || 0)}
+                      />
                     </div>
                   </div>
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600">Protein</div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {calculateTotals().protein.toFixed(1)}g
-                    </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Add Item Button */}
+            <button 
+              onClick={handleAddItem}
+              className="w-full py-md border-2 border-dashed border-outline-variant text-on-surface-variant rounded-2xl flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors group"
+            >
+              <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add_circle</span>
+              <span className="font-label-sm text-label-sm font-semibold">Tambah Item Lain</span>
+            </button>
+
+            {/* Summary Section */}
+            <section className="mt-xl">
+              <div className="bg-surface-container-high dark:bg-inverse-surface rounded-3xl p-md sm:p-lg relative overflow-hidden shadow-lg border border-primary/10">
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-md text-left">
+                  <div className="flex flex-col gap-xs">
+                    <h3 className="font-title-md text-title-md text-on-surface font-bold">Total Ringkasan</h3>
+                    <p className="font-display-lg text-display-lg text-primary leading-tight font-bold">
+                      {totals.calories} <span className="text-title-md font-medium text-on-surface-variant">kkal</span>
+                    </p>
                   </div>
-                  <div className="bg-yellow-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600">Karbo</div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {calculateTotals().carbs.toFixed(1)}g
+                  <div className="flex gap-lg pr-4">
+                    <div className="flex flex-col">
+                      <span className="font-caption text-caption text-on-surface-variant uppercase tracking-widest">Protein</span>
+                      <span className="font-title-md text-title-md font-bold">{totals.protein.toFixed(1)}g</span>
+                      <div className="w-16 h-1 bg-primary/20 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${Math.min(totals.protein * 1.5, 100)}%` }} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="bg-orange-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600">Lemak</div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {calculateTotals().fat.toFixed(1)}g
+                    <div className="flex flex-col">
+                      <span className="font-caption text-caption text-on-surface-variant uppercase tracking-widest">Karbo</span>
+                      <span className="font-title-md text-title-md font-bold">{totals.carbs.toFixed(1)}g</span>
+                      <div className="w-16 h-1 bg-secondary/20 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-secondary" style={{ width: `${Math.min(totals.carbs * 1.0, 100)}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-caption text-caption text-on-surface-variant uppercase tracking-widest">Lemak</span>
+                      <span className="font-title-md text-title-md font-bold">{totals.fat.toFixed(1)}g</span>
+                      <div className="w-16 h-1 bg-tertiary/20 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-tertiary" style={{ width: `${Math.min(totals.fat * 2.0, 100)}%` }} />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="mt-6 flex gap-4">
-                <Button
+                {/* Save Button */}
+                <button 
                   onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  disabled={saving || saveSuccess}
+                  className={`mt-lg w-full py-4 rounded-full font-title-md shadow-lg transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${
+                    saveSuccess 
+                      ? 'bg-secondary text-white' 
+                      : 'bg-primary text-on-primary hover:scale-[1.01]'
+                  }`}
                 >
-                  {saving ? 'Menyimpan...' : '💾 Simpan ke Riwayat'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setAnalysisResult(null)
-                    setEditedItems([])
-                    setPreviewUrl(null)
-                    setSelectedFile(null)
-                  }}
-                >
-                  Scan Lagi
-                </Button>
+                  <span className="material-symbols-outlined">
+                    {saveSuccess ? 'check_circle' : saving ? 'sync' : 'save'}
+                  </span>
+                  <span>{saveSuccess ? 'Tersimpan!' : saving ? 'Menyimpan...' : 'Simpan ke Riwayat'}</span>
+                </button>
               </div>
-            </div>
-          </>
+            </section>
+          </section>
         )}
-      </div>
+
+      </main>
+
+      <BottomNav />
+
+      {/* Success Toast */}
+      {saveSuccess && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-on-background text-background px-lg py-sm rounded-full shadow-xl flex items-center gap-sm animate-bounce z-[60]">
+          <span className="material-symbols-outlined text-secondary-fixed">check_circle</span>
+          <span className="font-label-sm font-semibold text-white">Berhasil disimpan ke riwayat!</span>
+        </div>
+      )}
     </div>
   )
 }

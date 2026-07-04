@@ -14,6 +14,16 @@ export interface Database {
         Insert: FoodLogInsert
         Update: FoodLogUpdate
       }
+      exercise_logs: {
+        Row: ExerciseLog
+        Insert: ExerciseLogInsert
+        Update: ExerciseLogUpdate
+      }
+      weight_logs: {
+        Row: WeightLog
+        Insert: WeightLogInsert
+        Update: WeightLogUpdate
+      }
     }
   }
 }
@@ -21,8 +31,9 @@ export interface Database {
 export interface Profile {
   id: string // UUID references auth.users
   tinggi_cm: number | null
-  berat_kg: number | null
-  umur: number | null
+  berat_kg: number | null // Deprecated: use weight_logs instead
+  umur: number | null // Deprecated: use tanggal_lahir instead
+  tanggal_lahir: string | null // Date in YYYY-MM-DD format
   gender: 'pria' | 'wanita' | null
   activity_level: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null
   created_at: string
@@ -32,16 +43,18 @@ export interface Profile {
 export interface ProfileInsert {
   id: string
   tinggi_cm?: number | null
-  berat_kg?: number | null
-  umur?: number | null
+  berat_kg?: number | null // Deprecated
+  umur?: number | null // Deprecated
+  tanggal_lahir?: string | null // YYYY-MM-DD format
   gender?: 'pria' | 'wanita' | null
   activity_level?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null
 }
 
 export interface ProfileUpdate {
   tinggi_cm?: number | null
-  berat_kg?: number | null
-  umur?: number | null
+  berat_kg?: number | null // Deprecated
+  umur?: number | null // Deprecated
+  tanggal_lahir?: string | null // YYYY-MM-DD format
   gender?: 'pria' | 'wanita' | null
   activity_level?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null
   updated_at?: string
@@ -88,6 +101,52 @@ export interface FoodLogUpdate {
   total_fat?: number | null
 }
 
+export interface ExerciseLog {
+  id: string
+  user_id: string
+  exercise_type: string
+  duration_minutes: number | null
+  reps: number | null
+  calories_burned: number
+  notes: string | null
+  created_at: string
+}
+
+export interface ExerciseLogInsert {
+  user_id: string
+  exercise_type: string
+  duration_minutes?: number | null
+  reps?: number | null
+  calories_burned: number
+  notes?: string | null
+}
+
+export interface ExerciseLogUpdate {
+  exercise_type?: string
+  duration_minutes?: number | null
+  reps?: number | null
+  calories_burned?: number
+  notes?: string | null
+}
+
+export interface WeightLog {
+  id: string
+  user_id: string
+  berat_kg: number
+  recorded_at: string
+}
+
+export interface WeightLogInsert {
+  user_id: string
+  berat_kg: number
+  recorded_at?: string
+}
+
+export interface WeightLogUpdate {
+  berat_kg?: number
+  recorded_at?: string
+}
+
 // API Response Types
 export interface AnalyzeResponse {
   items: FoodItem[]
@@ -96,6 +155,12 @@ export interface AnalyzeResponse {
   total_carbs_g: number
   total_fat_g: number
   photo_url?: string
+}
+
+export interface CalorieBurnEstimate {
+  calories_burned: number
+  met_value: number
+  explanation: string
 }
 
 // Helper type untuk user session

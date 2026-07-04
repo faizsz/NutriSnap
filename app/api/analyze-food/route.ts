@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Call Gemini AI
     console.log('Calling Gemini AI with model:', process.env.GEMINI_MODEL)
     const model = genAI.getGenerativeModel({ 
-      model: process.env.GEMINI_MODEL || 'gemini-1.5-flash' 
+      model: process.env.GEMINI_MODEL || 'gemini-3-flash' 
     })
 
     const prompt = `Analyze this food image and return ONLY a valid JSON object with NO markdown formatting, NO code blocks, and NO additional text.
@@ -107,15 +107,45 @@ Rules:
 - Calculate totals by summing all items
 - Return ONLY the JSON object, no other text`
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType: imageFile.type,
-          data: base64Image,
-        },
-      },
-    ])
+    // Retry logic untuk handle 503 errors
+    let result
+    let lastError
+    const maxRetries = 3
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        result = await model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              mimeType: imageFile.type,
+              data: base64Image,
+            },
+          },
+        ])
+        break // Success, exit retry loop
+      } catch (err: any) {
+        lastError = err
+        
+        // Check if it's a 503 (service unavailable) or rate limit error
+        if (err.message?.includes('503') || err.message?.includes('high demand') || err.message?.includes('overloaded')) {
+          if (attempt < maxRetries) {
+            // Wait before retry: 2s, 4s, 8s (exponential backoff)
+            const waitTime = Math.pow(2, attempt) * 1000
+            console.log(`Gemini API busy, retrying in ${waitTime}ms... (attempt ${attempt}/${maxRetries})`)
+            await new Promise(resolve => setTimeout(resolve, waitTime))
+            continue
+          }
+        }
+        
+        // If not 503 or max retries reached, throw error
+        throw err
+      }
+    }
+
+    if (!result) {
+      throw lastError || new Error('Failed to get response from Gemini AI')
+    }
 
     const response = result.response
     let text = response.text()
