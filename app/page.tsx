@@ -1,101 +1,116 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <nav className="flex justify-between items-center mb-16">
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl font-bold">🍎</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">NutriSnap</h1>
+          </div>
+          <div className="space-x-4">
+            <Link href="/login">
+              <Button variant="ghost">Masuk</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Daftar</Button>
+            </Link>
+          </div>
+        </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Hero Section */}
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-5xl font-bold text-gray-900">
+              Lacak Kalori dengan
+              <span className="text-green-600"> Foto</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Cukup ambil foto makanan Anda, dan biarkan AI kami menganalisis
+              kandungan kalori dan nutrisinya secara otomatis.
+            </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex justify-center space-x-4">
+            <Link href="/register">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                Mulai Gratis
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="outline">
+                Lihat Demo
+              </Button>
+            </Link>
+          </div>
+
+          {/* Hero Image Placeholder */}
+          <div className="mt-12 bg-gray-200 rounded-2xl h-96 flex items-center justify-center">
+            <div className="text-center space-y-2">
+              <div className="text-6xl">📱</div>
+              <p className="text-gray-500">Screenshot App Preview</p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        {/* Features Section */}
+        <div className="mt-24 max-w-6xl mx-auto">
+          <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">
+            Fitur Utama
+          </h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <span className="text-2xl">📸</span>
+              </div>
+              <h4 className="text-xl font-semibold mb-2 text-gray-900">
+                Analisis AI
+              </h4>
+              <p className="text-gray-600">
+                Powered by Gemini AI untuk mengenali makanan dan menghitung
+                kalori secara akurat dari foto.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h4 className="text-xl font-semibold mb-2 text-gray-900">
+                Tracking Harian
+              </h4>
+              <p className="text-gray-600">
+                Pantau asupan kalori dan nutrisi Anda setiap hari dengan
+                visualisasi yang mudah dipahami.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <span className="text-2xl">🎯</span>
+              </div>
+              <h4 className="text-xl font-semibold mb-2 text-gray-900">
+                Target Personal
+              </h4>
+              <p className="text-gray-600">
+                Atur target kalori harian dan dapatkan insight untuk mencapai
+                tujuan kesehatan Anda.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-24 pt-8 border-t border-gray-200 text-center text-gray-500">
+          <p>&copy; 2026 NutriSnap. Food Calorie Tracker with AI Vision.</p>
+        </footer>
+      </div>
+    </main>
+  )
 }
