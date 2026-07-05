@@ -4,9 +4,11 @@
 
 NutriSnap adalah aplikasi web (mobile-first) untuk tracking kalori harian yang menghilangkan friction terbesar dalam food logging: input data manual. Cukup foto makanan, dan AI (Gemini Vision) akan mengidentifikasi item makanan beserta estimasi kalori dan makronutriennya secara otomatis.
 
-<img width="335" height="680" alt="image" src="https://github.com/user-attachments/assets/6b281f80-a322-44e1-9655-66e413845b36" />
-<img width="341" height="738" alt="image" src="https://github.com/user-attachments/assets/cbe1fdaf-c0dc-4220-af5b-b4a98f744422" />
-<img width="337" height="742" alt="image" src="https://github.com/user-attachments/assets/2e271c61-a9bc-4269-9bce-bc5d4702b638" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6b281f80-a322-44e1-9655-66e413845b36" width="32%" />
+  <img src="https://github.com/user-attachments/assets/cbe1fdaf-c0dc-4220-af5b-b4a98f744422" width="32%" />
+  <img src="https://github.com/user-attachments/assets/2e271c61-a9bc-4269-9bce-bc5d4702b638" width="32%" />
+</p>
 
 ---
 
