@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { FoodLog, ExerciseLog } from '@/types/database'
+import { FoodLog, ExerciseLog } from '@nutrisnap/shared'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import BottomNav from '@/components/BottomNav'
