@@ -21,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] h-16 px-4 pb-safe flex justify-around items-center border-t border-surface-variant/10">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] h-16 px-4 pb-safe flex justify-around items-center border-t border-surface-variant/10">
         <div className="flex justify-around items-center w-full max-w-container-max mx-auto h-full">
           {navItems.map((item, idx) => {
             const active = item.href ? isActive(item.href) : false
