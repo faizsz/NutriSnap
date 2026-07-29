@@ -8,7 +8,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_DB-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Gemini AI](https://img.shields.io/badge/Gemini_AI-1.5_/_2.0-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini_AI-3.5-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
