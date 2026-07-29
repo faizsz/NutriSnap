@@ -52,7 +52,10 @@ Dengan dukungan **Google Gemini AI Vision**, pengguna cukup mengunggah foto maka
 
 | 1. Dashboard & Macro Tracking | 2. AI Food Photo Scanner | 3. Riwayat Olahraga & Berat Badan |
 | :---: | :---: | :---: |
-| <!-- WEBSITE SCREENSHOT 1 --> <img width="100%" alt="Website Dashboard" src="URL_SCREENSHOT_WEBSITE_1" /> | <!-- WEBSITE SCREENSHOT 2 --> <img width="100%" alt="Website AI Scan" src="URL_SCREENSHOT_WEBSITE_2" /> | <!-- WEBSITE SCREENSHOT 3 --> <img width="100%" alt="Website Exercise & Weight History" src="URL_SCREENSHOT_WEBSITE_3" /> |
+| <!-- WEBSITE SCREENSHOT 1 --> <img width="1897" height="907" alt="Screenshot 2026-07-18 015348" src="https://github.com/user-attachments/assets/783624a1-1b91-4771-8120-19068453de3a" />
+ | <!-- WEBSITE SCREENSHOT 2 --> <img width="1902" height="912" alt="Screenshot 2026-07-18 005947" src="https://github.com/user-attachments/assets/9d336cba-0812-4c91-957a-7ec68ef8f556" />
+ | <!-- WEBSITE SCREENSHOT 3 --> <img width="1902" height="912" alt="Screenshot 2026-07-18 025700" src="https://github.com/user-attachments/assets/40d0df89-1704-4fdd-8eeb-e8b3c6388c3f" />
+ |
 
 <br>
 
