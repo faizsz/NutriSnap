@@ -59,9 +59,18 @@ Dengan dukungan **Google Gemini AI Vision**, pengguna cukup mengunggah foto maka
 
 ### 📱 Tampilan Mobile
 
-| 1. Mobile - Home & Ringkasan Nutrisi | 2. Mobile - Scan Foto Makanan AI | 3. Mobile - Input Olahraga & Profil |
-| :---: | :---: | :---: |
-| <img width="332" height="740" alt="Screenshot 2026-07-05 002544" src="https://github.com" /> | <img width="341" height="738" alt="Screenshot 2026-07-05 002427" src="https://github.com" /> | <img width="337" height="742" alt="Screenshot 2026-07-05 002502" src="https://github.com" /> |
+<table>
+  <tr>
+    <td align="center"><b>1. Mobile - Home & Ringkasan Nutrisi</b></td>
+    <td align="center"><b>2. Mobile - Scan Foto Makanan AI</b></td>
+    <td align="center"><b>3. Mobile - Input Olahraga & Profil</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/0a04d1cc-eb6b-4150-8f61-1668155d20ae" width="250" alt="Mobile Home" /></td>
+    <td><img src="https://github.com/user-attachments/assets/ff586c4f-0faf-45d2-99ad-ad8a309aef8e" width="250" alt="Mobile Scan" /></td>
+    <td><img src="https://github.com/user-attachments/assets/5b0cc389-7c6c-431f-8f2c-8ae553863430" width="250" alt="Mobile Profile" /></td>
+  </tr>
+</table>
 
 
 ---
